@@ -60,11 +60,17 @@ struct coroutine_pool {
     is_parallel = false;
     g_pool = this;
 
-    for (auto context : coroutines) {
-      context->run();
-      if (context->finished) {
-        delete context;
-        context = nullptr;
+    bool all_finished = false;
+    while (!all_finished) {
+      all_finished = true;
+      for (auto &context : coroutines) {
+        if (context->finished) {
+          delete context;
+          context = nullptr;
+        }
+        else {
+          context->resume();
+        }
       }
     }
     coroutines.clear();
