@@ -34,6 +34,28 @@ void yield() {
  *  2. yield 协程。
  *  3. 在至少 @param ms 毫秒之后将协程置为可用状态。
  */
+// void sleep(uint64_t ms) {
+//   if (g_pool->is_parallel) {
+//     auto cur = get_time();
+//     while (
+//         std::chrono::duration_cast<std::chrono::milliseconds>(get_time() - cur)
+//             .count() < ms)
+//       ;
+//   } else {
+//     // 从 g_pool 中获取当前协程状态
+//     auto context = g_pool->coroutines[g_pool->context_id];
+//     // 获取当前时间，更新 ready_func
+//     auto cur = get_time();
+//     // ready_func：检查当前时间，如果已经超时，则返回 true  
+//     context->ready = false;
+//     context->ready_func = [cur, ms]() -> bool {
+//       return std::chrono::duration_cast<std::chrono::milliseconds>(get_time()- cur).count() >= ms;
+//     };
+//     // 调用 coroutine_switch 切换到 coroutine_pool 上下文
+//     coroutine_switch(context->callee_registers, context->caller_registers);
+//   }
+// }
+
 void sleep(uint64_t ms) {
   if (g_pool->is_parallel) {
     auto cur = get_time();
@@ -44,14 +66,20 @@ void sleep(uint64_t ms) {
   } else {
     // 从 g_pool 中获取当前协程状态
     auto context = g_pool->coroutines[g_pool->context_id];
+    context->ready = false;
+
     // 获取当前时间，更新 ready_func
     auto cur = get_time();
-    // ready_func：检查当前时间，如果已经超时，则返回 true  
-    context->ready = false;
-    context->ready_func = [cur, ms]() -> bool {
-      return std::chrono::duration_cast<std::chrono::milliseconds>(get_time()- cur).count() >= ms;
+
+    // 使用 lambda 表达式注册 ready_func，按值捕获当前时间和睡眠时长。
+    context->ready_func = [cur, ms](){
+      // 检查当前时间，如果已经超时，则返回 true
+      return std::chrono::duration_cast<std::chrono::milliseconds>(get_time() - cur)
+            .count() >= ms;
     };
+
     // 调用 coroutine_switch 切换到 coroutine_pool 上下文
     coroutine_switch(context->callee_registers, context->caller_registers);
+
   }
 }
