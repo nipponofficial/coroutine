@@ -20,6 +20,7 @@ void yield() {
     auto context = g_pool->coroutines[g_pool->context_id];
 
     // 调用 coroutine_switch 切换到 coroutine_pool 上下文
+    coroutine_switch(context->callee_registers, context->caller_registers);
   }
 }
 

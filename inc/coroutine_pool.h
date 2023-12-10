@@ -61,7 +61,11 @@ struct coroutine_pool {
     g_pool = this;
 
     for (auto context : coroutines) {
-      delete context;
+      context->run();
+      if (context->finished) {
+        delete context;
+        context = nullptr;
+      }
     }
     coroutines.clear();
   }
