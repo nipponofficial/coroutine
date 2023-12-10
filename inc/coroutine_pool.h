@@ -63,15 +63,30 @@ struct coroutine_pool {
     bool all_finished = false;
     while (!all_finished) {
       all_finished = true;
+      // for (auto &context : coroutines) {
+      //   if (context->finished) {
+      //     delete context;
+      //     context = nullptr;
+      //   }
+      //   else {
+      //     context->resume();
+      //     all_finished = false;
+      //   }
+      // }
+      g_pool->context_id = 0;
+
       for (auto &context : coroutines) {
-        if (context->finished) {
-          delete context;
-          context = nullptr;
-        }
-        else {
+      if ( context == nullptr || context->finished ) {  
+        delete context;
+        context = nullptr;
+      } else {
+        if( context->ready || context->ready_func() ) { //the second will not be visited if ready is true
+          context->ready = true;
           context->resume();
+        }
           all_finished = false;
         }
+        g_pool->context_id++;
       }
     }
     coroutines.clear();
