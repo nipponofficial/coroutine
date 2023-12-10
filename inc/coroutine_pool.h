@@ -48,7 +48,7 @@ struct coroutine_pool {
 
   /**
    * @brief 以协程执行的方式串行并同时执行所有协程函数
-   * TODO: Task 1, Task 2
+   * DONE: Task 1, Task 2
    * 在 Task 1 中，我们不需要考虑协程的 ready
    * 属性，即可以采用轮询的方式挑选一个未完成执行的协程函数进行继续执行的操作。
    * 在 Task 2 中，我们需要考虑 sleep 带来的 ready

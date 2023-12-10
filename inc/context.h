@@ -43,7 +43,7 @@ struct basic_context {
       : finished(false), ready(true), stack_size(stack_size) {
     stack = new uint64_t[stack_size];
 
-    // TODO: Task 1
+    // DONE: Task 1
     // 在实验报告中分析以下代码
     // 对齐到 16 字节边界
     uint64_t rsp = (uint64_t)&stack[stack_size - 1];
@@ -66,7 +66,7 @@ struct basic_context {
   virtual void resume() = 0;
 };
 
-// TODO: Task 1
+// DONE: Task 1
 // 在实验报告中分析以下代码
 void coroutine_main(struct basic_context *context) {
   context->run();
@@ -135,7 +135,7 @@ struct coroutine_context : public basic_context {
 
   /**
    * @brief 恢复协程函数运行。
-   * TODO: Task 1
+   * DONE: Task 1
    * 你需要保存 callee-saved 寄存器，并且设置协程函数栈帧，然后将 rip 恢复到协程
    * yield 之后所需要执行的指令地址。
    */

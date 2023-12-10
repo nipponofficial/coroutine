@@ -57,11 +57,49 @@ void yield() {
   }
 ```
 
-### 额外要求
-### 1. 绘制协程切换时，栈的变化过程
+### 运行结果
+![img](reportimg/img_task1_result.png)
 
+## 额外要求
+### 1. 绘制协程切换时，栈的变化过程
+![img](reportimg/img_task1_p1.png)
+![img](reportimg/img_task1_p2.png)
 
 ### 2. 分析源代码，解释协程是如何跑起来的，包括 coroutine_entry 和 coroutine_main 函数以及初始的协程状态；
+
+`basic_context`：初始的协程状态
+```C++
+// 对齐到 16 字节边界
+uint64_t rsp = (uint64_t)&stack[stack_size - 1];
+rsp = rsp - (rsp & 0xF);
+
+void coroutine_main(struct basic_context * context);
+
+callee_registers[(int)Registers::RSP] = rsp;
+// 协程入口是 coroutine_entry
+callee_registers[(int)Registers::RIP] = (uint64_t)coroutine_entry;
+// 设置 r12 寄存器为 coroutine_main 的地址
+callee_registers[(int)Registers::R12] = (uint64_t)coroutine_main;
+// 设置 r13 寄存器，用于 coroutine_main 的参数
+callee_registers[(int)Registers::R13] = (uint64_t)this;
+```
+- 为协程设置了初始状态，分配堆栈空间对齐到16字节边界，`rsp`栈指针指向堆上的空间。
+- `rdi`寄存器设置为`coroutine_entry`
+- `r12 r13`寄存器设置为 `coroutine_main`运行协程地址和参数
+
+`coroutine_entry`: 是协程的入口函数
+`coroutine_main`: 用于运行协程
+```C++
+void coroutine_main(struct basic_context *context) {
+  context->run();
+  context->finished = true;
+  coroutine_switch(context->callee_registers, context->caller_registers);
+
+  // unreachable
+  assert(false);
+}
+```
+在函数里运行执行函数 `run()` 执行该协程，如果没有 `yield` 函数就完成，将协程标注为 `finished = true`，然后调用 `coroutine_switch` 切换到调度器环境。
 
 
 ## Task 2
@@ -119,3 +157,11 @@ void sleep(uint64_t ms) {
 
 
 ## Task 3: 优化二分算法
+```C++
+// 使用 __builtin_prefetch 预取容易产生缓存缺失的内存
+__builtin_prefetch(table + probe);
+yield();
+```
+
+### 运行效果
+![img](reportimg/img_task3_result.png)
