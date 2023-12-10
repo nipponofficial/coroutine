@@ -70,6 +70,7 @@ struct coroutine_pool {
         }
         else {
           context->resume();
+          all_finished = false;
         }
       }
     }
