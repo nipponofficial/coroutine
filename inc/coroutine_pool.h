@@ -60,25 +60,21 @@ struct coroutine_pool {
     is_parallel = false;
     g_pool = this;
 
-    g_pool->context_id = 0;
-    bool all_finished = false;
+    while (true) {
+      bool all_finished = true;
+      g_pool->context_id = 0;
 
-    for (int i = 0; i < coroutines.size(); ++i) {
-      if (all_finished) break;
-
-      if (!coroutines[i]->finished) {
-        if (coroutines[i]->ready || coroutines[i]->ready_func()) {
-          coroutines[i]->ready = true;
-          coroutines[i]->resume();
+      for (auto& context : coroutines) {
+        if (!context->finished) {
+          if (context->ready || context->ready_func()) {
+            context->ready = true;
+            context->resume();
+          }
+          all_finished = false;
         }
-        all_finished = false;
+        g_pool->context_id++;
       }
-      g_pool->context_id++;
+      if (all_finished) break;
     }
-    
-    for (auto context : coroutines) {
-      delete context;
-    }
-    coroutines.clear();
   }
 };
