@@ -9,7 +9,7 @@ auto get_time() { return std::chrono::system_clock::now(); }
 /**
  * @brief yield函数
  *
- * TODO: Task 1
+ * DONE: Task 1
  * 协程主动暂停执行，保存协程的寄存器和栈帧。
  * 将上下文转换至 coroutine_pool.serial_execute_all() 中的上下文进行重新的
  * schedule 调用。
@@ -43,10 +43,14 @@ void sleep(uint64_t ms) {
       ;
   } else {
     // 从 g_pool 中获取当前协程状态
-
+    auto context = g_pool->coroutines[g_pool->context_id];
     // 获取当前时间，更新 ready_func
     // ready_func：检查当前时间，如果已经超时，则返回 true
-
+    context->ready = false;
+    context->ready_func = [start=get_time(), ms]() mutable {
+      return std::chrono::duration_cast<std::chrono::milliseconds>(get_time()- start).count() >= ms;
+    };
     // 调用 coroutine_switch 切换到 coroutine_pool 上下文
+    coroutine_switch(context->callee_registers, context->caller_registers);
   }
 }
