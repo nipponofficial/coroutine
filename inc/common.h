@@ -45,7 +45,7 @@ void sleep(uint64_t ms) {
     // 从 g_pool 中获取当前协程状态
     auto context = g_pool->coroutines[g_pool->context_id];
     // 获取当前时间，更新 ready_func
-    // ready_func：检查当前时间，如果已经超时，则返回 true
+    // ready_func：检查当前时间，如果已经超时，则返回 true  
     context->ready = false;
     context->ready_func = [start=get_time(), ms]() mutable {
       return std::chrono::duration_cast<std::chrono::milliseconds>(get_time()- start).count() >= ms;
