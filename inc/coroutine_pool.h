@@ -76,5 +76,6 @@ struct coroutine_pool {
       }
       if (all_finished) break;
     }
+    coroutines.clear();
   }
 };
