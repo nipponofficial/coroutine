@@ -58,12 +58,12 @@ void yield() {
 ```
 
 ### 运行结果
-![img](reportimg/img_task1_result.png)
+![img](report_img/img_task1_result.png)
 
 ## 额外要求
 ### 1. 绘制协程切换时，栈的变化过程
-![img](reportimg/img_task1_p1.png)
-![img](reportimg/img_task1_p2.png)
+![img](report_img/img_task1_p1.png)
+![img](report_img/img_task1_p2.png)
 
 ### 2. 分析源代码，解释协程是如何跑起来的，包括 coroutine_entry 和 coroutine_main 函数以及初始的协程状态；
 
@@ -164,4 +164,4 @@ yield();
 ```
 
 ### 运行效果
-![img](reportimg/img_task3_result.png)
+![img](report_img/img_task3_result.png)

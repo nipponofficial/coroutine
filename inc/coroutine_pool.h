@@ -59,9 +59,10 @@ struct coroutine_pool {
   void serial_execute_all() {
     is_parallel = false;
     g_pool = this;
-
-    while (true) {
-      bool all_finished = true;
+    
+    bool all_finished = false;
+    while (!all_finished) {
+      all_finished = true;
       g_pool->context_id = 0;
 
       for (auto& context : coroutines) {
@@ -71,6 +72,9 @@ struct coroutine_pool {
             context->resume();
           }
           all_finished = false;
+        } else {
+          delete context;
+          context = nullptr;
         }
         g_pool->context_id++;
       }
