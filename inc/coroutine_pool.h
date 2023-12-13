@@ -56,29 +56,56 @@ struct coroutine_pool {
    *
    * 当所有协程函数都执行完毕后，退出该函数。
    */
+  // void serial_execute_all() {
+  //   is_parallel = false;
+  //   g_pool = this;
+    
+  //   bool all_finished = false;
+  //   while (!all_finished) {
+  //     all_finished = true;
+  //     g_pool->context_id = 0;
+
+  //     for (auto& context : coroutines) {
+  //       if (!context->finished) {
+  //         if (context->ready || context->ready_func()) {
+  //           context->ready = true;
+  //           context->resume();
+  //         }
+  //         all_finished = false;
+  //       } else {
+  //         delete context;
+  //         context = nullptr;
+  //       }
+  //       g_pool->context_id++;
+  //     }
+  //     if (all_finished) break;
+  //   }
+  //   coroutines.clear();
+  // }
   void serial_execute_all() {
     is_parallel = false;
     g_pool = this;
-    
-    bool all_finished = false;
-    while (!all_finished) {
+
+    bool all_finished = false;  //用于判断是否全部执行完毕
+    while ( !all_finished ){    //没有完毕就开启一次新的轮询
       all_finished = true;
       g_pool->context_id = 0;
 
-      for (auto& context : coroutines) {
-        if (!context->finished) {
-          if (context->ready || context->ready_func()) {
+      for (auto &context : coroutines) {
+
+        // 如果第一个条件为真，第二个条件就不会被验证，因此不会出现非法访问的情况。
+        if ( context == nullptr || context->finished ) {  
+          delete context;   // 聪明的编译器会使 delete nullptr 情况开销降到可以忽略不计的地步。
+          context = nullptr;
+        } else {
+          if( context->ready || context->ready_func() ) {   // 如果不 ready, 再用 ready_func 验证
             context->ready = true;
             context->resume();
           }
-          all_finished = false;
-        } else {
-          delete context;
-          context = nullptr;
+          all_finished = false; //一旦有一个非 finshed 的协程就设置为 false。会多进行一轮轮询，但对效率不会有太大影响 
         }
-        g_pool->context_id++;
+        g_pool->context_id++;   // 需要设置 context_id 与（下一个）执行的 coroutine 相对应
       }
-      if (all_finished) break;
     }
     coroutines.clear();
   }
